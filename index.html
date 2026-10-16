@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AMARESH Invoice Generator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header no-print">
+    <div>
+      <h1>AMARESH Invoice Generator</h1>
+      <p>Create, save, print and manage invoices</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="newInvoiceBtn" type="button">New invoice</button>
+      <button class="btn btn-primary" id="saveInvoiceBtn" type="button">Save invoice</button>
+      <button class="btn btn-primary" id="printInvoiceBtn" type="button">Print / Save PDF</button>
+    </div>
+  </header>
+
+  <main class="app-layout">
+    <section class="editor-panel no-print">
+      <div class="panel-heading">
+        <h2>Invoice details</h2>
+        <span id="statusMessage" class="status-message" aria-live="polite">Unsaved invoice</span>
+      </div>
+
+      <div class="form-grid">
+        <label>Invoice number
+          <input id="invoiceNumber" type="text" readonly value="Assigned when saved" />
+          <small>Number is reserved when you save the invoice.</small>
+        </label>
+        <label>Invoice date
+          <input id="invoiceDate" type="date" />
+        </label>
+      </div>
+
+      <h3>Business details</h3>
+      <div class="form-grid">
+        <label>Business name
+          <input id="businessName" type="text" value="AMARESH" />
+        </label>
+        <label>Phone numbers
+          <input id="businessPhones" type="text" value="8152994880, 7019519189" />
+        </label>
+        <label class="full-width">Address
+          <input id="businessAddress" type="text" value="Vallaballari Road, Near Duddupudi School, Sindhanur, Karnataka" />
+        </label>
+      </div>
+
+      <h3>Bill to</h3>
+      <div class="form-grid">
+        <label>Customer name
+          <input id="customerName" type="text" placeholder="Customer name" />
+        </label>
+        <label>Customer phone
+          <input id="customerPhone" type="tel" placeholder="Customer phone" />
+        </label>
+        <label class="full-width">Customer address
+          <input id="customerAddress" type="text" placeholder="Customer address" />
+        </label>
+      </div>
+
+      <div class="items-heading">
+        <h3>Items / services</h3>
+        
+      </div>
+      <div id="itemsEditor" class="items-editor"></div>
+      <button class="btn btn-add-item" id="addItemBtn" type="button"><span aria-hidden="true">＋</span> Add Item</button>
+      <div class="editor-total-strip" aria-live="polite">
+        <span>INVOICE TOTAL</span>
+        <strong id="editorTotal">₹0.00</strong>
+      </div>
+
+      <div class="form-grid totals-editor">
+        <label>Discount (₹)
+          <input id="discount" type="number" min="0" step="0.01" value="0" />
+        </label>
+        <label>Payment status
+          <select id="paymentStatus">
+            <option value="Unpaid">Unpaid</option>
+            <option value="Paid">Paid</option>
+            <option value="Partially paid">Partially paid</option>
+          </select>
+        </label>
+        <label class="full-width">Terms &amp; conditions
+          <textarea id="terms" rows="2">Online payment can be done using Google Pay or PhonePe @ 8152994880</textarea>
+        </label>
+      </div>
+      <p class="note">Invoice numbers are stored in this browser. Use the same browser/device to retain this invoice history. For multi-device or multi-user use, a backend database is needed.</p>
+    </section>
+
+    <section class="preview-panel">
+      <div class="preview-toolbar no-print">
+        <h2>Invoice preview</h2>
+        <span>Print-ready layout</span>
+      </div>
+
+      <article class="invoice-paper" id="invoicePaper">
+        <div class="invoice-top">
+          <div class="invoice-title">Invoice</div>
+          <div class="business-block">
+            <h2 id="previewBusinessName">AMARESH</h2>
+            <p id="previewBusinessAddress">Vallaballari Road, Near Duddupudi School, Sindhanur, Karnataka</p>
+            <p><strong>Phone No:</strong> <span id="previewBusinessPhones">8152994880, 7019519189</span></p>
+          </div>
+        </div>
+
+        <div class="bill-meta">
+          <div class="bill-to">
+            <h3>BILL TO:</h3>
+            <p class="customer-name" id="previewCustomerName">Customer name</p>
+            <p id="previewCustomerAddress">Customer address</p>
+            <p><strong>Phone no:</strong> <span id="previewCustomerPhone">—</span></p>
+          </div>
+          <div class="invoice-meta">
+            <p><strong>INVOICE #</strong></p>
+            <p id="previewInvoiceNumber">Assigned when saved</p>
+            <p><strong>Date:</strong> <span id="previewInvoiceDate">—</span></p>
+          </div>
+        </div>
+
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th class="item-no">ITEMS</th>
+              <th>DESCRIPTION</th>
+              <th class="number">PRICE</th>
+              <th class="number">TAX</th>
+              <th class="number">AMOUNT</th>
+            </tr>
+          </thead>
+          <tbody id="previewItems">
+            <tr><td>1</td><td>Tax Audit Fees FY 25-26</td><td class="number">₹0.00</td><td class="number">0%</td><td class="number">₹0.00</td></tr>
+          </tbody>
+        </table>
+
+        <div class="invoice-bottom">
+          <div class="total-block">
+            <h3>TOTAL</h3>
+            <p id="previewTotal">₹0.00</p>
+          </div>
+        </div>
+        
+        <div class="payment-qr-section">
+          <div class="payment-qr-copy">
+            <h3>SCAN &amp; PAY</h3>
+            <p>Pay securely using Google Pay or another supported UPI app.</p>
+            <p class="payment-qr-phone"><strong>UPI / Payment number:</strong> 8152994880</p>
+          </div>
+          <img class="payment-qr-image" src="payment-qr.png" alt="Payment QR code for scanning with a UPI app" />
+        </div>
+      </article>
+    </section>
+
+    <section class="history-panel no-print">
+      <div class="panel-heading">
+        <div>
+          <h2>Invoice history</h2>
+          <p class="muted">Saved invoices on this browser</p>
+        </div>
+        <input id="historySearch" type="search" placeholder="Search invoice or customer" />
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </section>
+  </main>
+
+  <template id="itemRowTemplate">
+    <div class="item-editor-row">
+      <label class="description-field">Description
+        <select class="item-description">
+          <option value="Tax Audit Fees FY 25-26">Tax Audit Fees FY 25-26</option>
+          <option value="Income Tax Returns FY 25-26">Income Tax Returns FY 25-26</option>
+          <option value="Income Tax Notice FY 25-26">Income Tax Notice FY 25-26</option>
+          <option value="Other">Other (type description)</option>
+        </select>
+        <input class="custom-description" type="text" placeholder="Enter custom description" hidden />
+      </label>
+      <label>Price (₹)
+        <input class="item-price" type="number" min="0" step="0.01" value="0" />
+      </label>
+      <label>Tax (%)
+        <input class="item-tax" type="number" min="0" max="100" step="0.01" value="0" />
+      </label>
+      <label>Qty
+        <input class="item-qty" type="number" min="0.01" step="0.01" value="1" />
+      </label>
+      <div class="item-line-total">
+        <span>Amount</span>
+        <strong class="item-amount">₹0.00</strong>
+      </div>
+      <button class="remove-item-btn" type="button" aria-label="Remove item" title="Remove item">×</button>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
