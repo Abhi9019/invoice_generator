@@ -173,7 +173,7 @@
 
     return {
       id: currentInvoiceId,
-      invoiceNumber: assignedInvoiceNumber,
+      invoiceNumber: $("invoiceNumber").value.trim(),
       date: $("invoiceDate").value,
       businessName: $("businessName").value.trim(),
       businessAddress: $("businessAddress").value.trim(),
@@ -235,6 +235,7 @@
   }
 
   function validateInvoice(data) {
+    if (!data.invoiceNumber) return "Please enter an invoice number.";
     if (!data.date) return "Please select an invoice date.";
     if (!data.customerName) return "Please enter the customer name.";
     if (!data.items.length) return "Please add at least one item.";
@@ -253,27 +254,28 @@
 
     const invoices = readInvoices();
     const isEditingExisting = currentInvoiceId && invoices.some((invoice) => invoice.id === currentInvoiceId);
+    const duplicateNumber = invoices.some((invoice) =>
+      String(invoice.invoiceNumber).trim().toLowerCase() === data.invoiceNumber.toLowerCase() && invoice.id !== currentInvoiceId
+    );
+    if (duplicateNumber) {
+      alert("That invoice number is already used. Please enter a different invoice number.");
+      return false;
+    }
 
     if (!isEditingExisting) {
-      // Assign a sequential number only for a new saved invoice.
-      data.invoiceNumber = reserveInvoiceNumber();
       data.id = `inv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       data.createdAt = new Date().toISOString();
       invoices.push(data);
       if (!writeInvoices(invoices)) return false;
       currentInvoiceId = data.id;
-      assignedInvoiceNumber = data.invoiceNumber;
-      localStorage.setItem(COUNTER_KEY, String(Number(data.invoiceNumber) + 1));
     } else {
       const index = invoices.findIndex((invoice) => invoice.id === currentInvoiceId);
       data.id = currentInvoiceId;
-      data.invoiceNumber = invoices[index].invoiceNumber;
       data.createdAt = invoices[index].createdAt;
       invoices[index] = data;
       if (!writeInvoices(invoices)) return false;
-      assignedInvoiceNumber = data.invoiceNumber;
     }
-
+    assignedInvoiceNumber = data.invoiceNumber;
     $("invoiceNumber").value = data.invoiceNumber;
     updatePreview();
     markSaved(`Saved invoice #${data.invoiceNumber}`);
@@ -306,7 +308,7 @@
   function newInvoice() {
     currentInvoiceId = null;
     assignedInvoiceNumber = null;
-    $("invoiceNumber").value = "Assigned when saved";
+    $("invoiceNumber").value = "";
     $("invoiceDate").value = todayISO();
     $("customerName").value = "";
     $("customerAddress").value = "";
@@ -316,7 +318,7 @@
     $("itemsEditor").replaceChildren();
     addItemRow();
     updatePreview();
-    markUnsaved("New invoice — number assigned on save");
+    markUnsaved("New invoice — enter invoice number manually");
   }
 
   function deleteInvoice(id) {
@@ -384,7 +386,7 @@
 
   function attachLiveUpdates() {
     [
-      "invoiceDate", "businessName", "businessAddress", "businessPhones",
+      "invoiceNumber", "invoiceDate", "businessName", "businessAddress", "businessPhones",
       "customerName", "customerAddress", "customerPhone", "discount",
       "paymentStatus", "terms"
     ].forEach((id) => {
@@ -409,7 +411,7 @@
     });
     $("saveInvoiceBtn").addEventListener("click", saveInvoice);
     $("newInvoiceBtn").addEventListener("click", () => {
-      const hasChanges = !isSaved && ($("customerName").value.trim() || collectItems().some((item) => item.price > 0 || item.description !== SERVICES[0]));
+      const hasChanges = !isSaved && ($("invoiceNumber").value.trim() || $("customerName").value.trim() || collectItems().some((item) => item.price > 0 || item.description !== SERVICES[0]));
       if (hasChanges && !confirm("Start a new invoice? Unsaved changes will be lost.")) return;
       newInvoice();
     });
@@ -418,7 +420,7 @@
         const shouldSave = confirm("Save this invoice before printing so it receives an invoice number?");
         if (shouldSave && !saveInvoice()) return;
         if (!shouldSave) {
-          alert("Save the invoice first to assign a unique invoice number.");
+          alert("Please save the invoice first using the invoice number you entered.");
           return;
         }
       }
